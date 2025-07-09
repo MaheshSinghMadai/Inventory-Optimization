@@ -76,7 +76,7 @@ reorder_point = calculate_reorder_point(forecast_for_inventory, lead_time_weeks,
 st.write(f"**Reorder Point:** {reorder_point:,.2f} units")
 st.write(f"**Lead Time:** {lead_time_weeks} weeks")
 st.write(f"**Safety Stock:** {safety_stock:,.2f} units")
-st.write(f"**Current Date and Time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S %z')}")
+# st.write(f"**Current Date and Time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S %z')}")
 
 # Run the app
 if __name__ == "__main__":
