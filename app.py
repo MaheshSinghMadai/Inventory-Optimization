@@ -79,5 +79,5 @@ st.write(f"**Safety Stock:** {safety_stock:,.2f} units")
 # st.write(f"**Current Date and Time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S %z')}")
 
 # Run the app
-if __name__ == "__main__":
-    st.rerun()
+# if __name__ == "__main__":
+#     st.rerun()
