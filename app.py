@@ -63,8 +63,59 @@ ax.grid(True)
 st.pyplot(fig)
 st.write(f"ARIMA MAPE: {mape_arima}%, XGBoost MAPE: {mape_xgb}%. Lower MAPE indicates better accuracy.")
 
-# 4. UI of Reorder Points
-st.header("4. Reorder Points")
+# 4. Performance Comparison Chart
+
+# Define performance metrics (static based on previous results)
+performance_metrics = {
+    'ARIMA': {'MAE': 3418700.73, 'RMSE': 4213784.48, 'MAPE': 7.98},
+    'XGBoost': {'MAE': 2760339.00, 'RMSE': 3419715.56, 'MAPE': 6.14}
+}
+
+st.header("4. Performance Comparison of Models")
+fig, (ax_mae, ax_rmse, ax_mape) = plt.subplots(1, 3, figsize=(18, 5), sharey=False)
+width = 0.35
+x = np.arange(2)  # Two models: ARIMA and XGBoost
+
+# MAE Chart
+ax_mae.bar(x[0], performance_metrics['ARIMA']['MAE'] / 1e6, width, label='ARIMA', color='skyblue')
+ax_mae.bar(x[1], performance_metrics['XGBoost']['MAE'] / 1e6, width, label='XGBoost', color='orange')
+ax_mae.set_xlabel('Models')
+ax_mae.set_ylabel('MAE (Millions)')
+ax_mae.set_title('Mean Absolute Error (MAE)')
+ax_mae.set_xticks(x)
+ax_mae.set_xticklabels(['ARIMA', 'XGBoost'])
+ax_mae.legend()
+ax_mae.grid(True, which='both', linestyle='--', alpha=0.7)
+
+# RMSE Chart
+ax_rmse.bar(x[0], performance_metrics['ARIMA']['RMSE'] / 1e6, width, label='ARIMA', color='skyblue')
+ax_rmse.bar(x[1], performance_metrics['XGBoost']['RMSE'] / 1e6, width, label='XGBoost', color='orange')
+ax_rmse.set_xlabel('Models')
+ax_rmse.set_ylabel('RMSE (Millions)')
+ax_rmse.set_title('Root Mean Squared Error (RMSE)')
+ax_rmse.set_xticks(x)
+ax_rmse.set_xticklabels(['ARIMA', 'XGBoost'])
+ax_rmse.legend()
+ax_rmse.grid(True, which='both', linestyle='--', alpha=0.7)
+
+# MAPE Chart
+ax_mape.bar(x[0], performance_metrics['ARIMA']['MAPE'], width, label='ARIMA', color='skyblue')
+ax_mape.bar(x[1], performance_metrics['XGBoost']['MAPE'], width, label='XGBoost', color='orange')
+ax_mape.set_xlabel('Models')
+ax_mape.set_ylabel('MAPE (%)')
+ax_mape.set_title('Mean Absolute Percentage Error (MAPE)')
+ax_mape.set_xticks(x)
+ax_mape.set_xticklabels(['ARIMA', 'XGBoost'])
+ax_mape.legend()
+ax_mape.grid(True, which='both', linestyle='--', alpha=0.7)
+
+# Adjust layout to prevent overlap
+plt.tight_layout()
+st.pyplot(fig)
+st.write("MAE and RMSE are scaled to millions (1e6) for readability. Lower values indicate better performance.")
+
+# 5. UI of Reorder Points
+st.header("5. Reorder Points")
 if mape_arima <= mape_xgb:
     st.write("Using ARIMA forecast for inventory optimization (better MAPE)")
     forecast_for_inventory = arima_forecast
