@@ -18,7 +18,7 @@ def load_data():
         df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
         df = df[df['Quantity'] > 0]
         daily_sales = df.groupby(['StockCode', pd.Grouper(key='InvoiceDate', freq='D')])['Quantity'].sum().reset_index()
-        st.write(f"Loaded and processed historical data shape: {daily_sales.shape}")
+  
     except FileNotFoundError:
         st.error("online_retail.csv not found. Please ensure the file is in the working directory.")
         st.stop()
@@ -156,22 +156,38 @@ if selected_stockcode:
 # Comparison of Two Models
 st.header("4. Comparison of Two Models")
 fig3, ax3 = plt.subplots(figsize=(12, 6))
-historical_total = daily_sales.groupby('InvoiceDate')['Quantity'].sum().reset_index()
-ax3.plot(historical_total['InvoiceDate'], historical_total['Quantity'] / 1000, label='Historical Sales', color='blue')
 if arima_forecasts:
-    total_arima = pd.concat(arima_forecasts.values()).groupby('Date')['predicted_sales'].sum().reset_index()
-    ax3.plot(total_arima['Date'], total_arima['predicted_sales'] / 1000, label='ARIMA Forecast', color='skyblue', linestyle='--')
+    try:
+        total_arima = pd.concat([df.assign(StockCode=stockcode) for stockcode, df in arima_forecasts.items()])
+        total_arima = total_arima.groupby('Date')['predicted_sales'].sum().reset_index()
+        total_arima['Date'] = pd.to_datetime(total_arima['Date'])
+        # Check for flat line
+        if total_arima['predicted_sales'].nunique() == 1:
+            st.warning("ARIMA forecast is flat. Check forecast files for constant predicted_sales values.")
+        ax3.plot(total_arima['Date'], total_arima['predicted_sales'] / 1000, label='ARIMA Forecast', color='orange', linestyle='-')
+    except Exception as e:
+        st.error(f"Error aggregating ARIMA forecasts: {str(e)}")
+
 if xgb_forecasts:
-    total_xgb = pd.concat(xgb_forecasts.values()).groupby('Date')['predicted_sales'].sum().reset_index()
-    ax3.plot(total_xgb['Date'], total_xgb['predicted_sales'] / 1000, label='XGBoost Forecast', color='lightgreen', linestyle='--')
+    try:
+        total_xgb = pd.concat([df.assign(StockCode=stockcode) for stockcode, df in xgb_forecasts.items()])
+        total_xgb = total_xgb.groupby('Date')['predicted_sales'].sum().reset_index()
+        total_xgb['Date'] = pd.to_datetime(total_xgb['Date'])
+        # Check for flat line
+        if total_xgb['predicted_sales'].nunique() == 1:
+            st.warning("XGBoost forecast is flat. Check forecast files for constant predicted_sales values.")
+        ax3.plot(total_xgb['Date'], total_xgb['predicted_sales'] / 1000, label='XGBoost Forecast', color='lightgreen', linestyle='--')
+    except Exception as e:
+        st.error(f"Error aggregating XGBoost forecasts: {str(e)}")
+
 ax3.set_xlabel('Date')
 ax3.set_ylabel('Sales (Thousands)')
-ax3.set_title('Historical vs. Forecasted Sales (All StockCodes)')
+ax3.set_title('ARIMA vs. XGBoost Forecasted Sales (All StockCodes)')
 ax3.legend()
 ax3.grid(True)
 plt.tight_layout()
 st.pyplot(fig3)
-st.write(f"ARIMA MAPE: {performance_metrics['ARIMA']['MAPE']:.2f}%, XGBoost MAPE: {performance_metrics['XGBoost']['MAPE']:.2f}%. Note: Values from performance_metrics.csv.")
+st.write(f"ARIMA MAPE: {performance_metrics['ARIMA']['MAPE']:.2f}%, XGBoost MAPE: {performance_metrics['XGBoost']['MAPE']:.2f}%.")
 
 # Performance Comparison Charts
 st.header("5. Performance Comparison of Models")
@@ -181,7 +197,7 @@ x = np.arange(2)
 
 # MSE Chart
 ax_mse.bar(x[0], metrics_df[metrics_df['Model'] == 'ARIMA']['Average_MSE'].values[0] / 1e6, width, label='ARIMA', color='skyblue')
-ax_mse.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_MSE'].values[0] / 1e6, width, label='XGBoost', color='lightgreen')
+ax_mse.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_MSE'].values[0] / 1e6, width, label='XGBoost', color='orange')
 ax_mse.set_xlabel('Models')
 ax_mse.set_ylabel('MSE (Millions)')
 ax_mse.set_title('Mean Squared Error Comparison')
@@ -192,7 +208,7 @@ ax_mse.grid(True, which='both', linestyle='--', alpha=0.7)
 
 # MAPE Chart
 ax_mape.bar(x[0], metrics_df[metrics_df['Model'] == 'ARIMA']['Average_MAPE (%)'].values[0], width, label='ARIMA', color='skyblue')
-ax_mape.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_MAPE (%)'].values[0], width, label='XGBoost', color='lightgreen')
+ax_mape.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_MAPE (%)'].values[0], width, label='XGBoost', color='orange')
 ax_mape.set_xlabel('Models')
 ax_mape.set_ylabel('MAPE (%)')
 ax_mape.set_title('Mean Absolute Percentage Error Comparison')
@@ -203,4 +219,4 @@ ax_mape.grid(True, which='both', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
 st.pyplot(fig4)
-st.write("MSE is scaled to millions (1e6) for readability. Values are from performance_metrics.csv.")
+st.write("MSE is scaled to millions (1e6) for readability.")
