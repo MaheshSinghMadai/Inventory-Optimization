@@ -196,10 +196,10 @@ width = 0.35
 x = np.arange(2)
 
 # MSE Chart
-ax_mse.bar(x[0], metrics_df[metrics_df['Model'] == 'ARIMA']['Average_MSE'].values[0] / 1e6, width, label='ARIMA', color='skyblue')
-ax_mse.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_MSE'].values[0] / 1e6, width, label='XGBoost', color='orange')
+ax_mse.bar(x[0], metrics_df[metrics_df['Model'] == 'ARIMA']['Average_RMSE'].values[0] / 1e6, width, label='ARIMA', color='skyblue')
+ax_mse.bar(x[1], metrics_df[metrics_df['Model'] == 'XGBoost']['Average_RMSE'].values[0] / 1e6, width, label='XGBoost', color='orange')
 ax_mse.set_xlabel('Models')
-ax_mse.set_ylabel('MSE (Millions)')
+ax_mse.set_ylabel('RMSE (Millions)')
 ax_mse.set_title('Mean Squared Error Comparison')
 ax_mse.set_xticks(x)
 ax_mse.set_xticklabels(['ARIMA', 'XGBoost'])
@@ -219,4 +219,4 @@ ax_mape.grid(True, which='both', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
 st.pyplot(fig4)
-st.write("MSE is scaled to millions (1e6) for readability.")
+st.write("RMSE is scaled to millions (1e6) for readability.")
