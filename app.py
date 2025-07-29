@@ -69,11 +69,9 @@ daily_sales, arima_forecasts, xgb_forecasts = load_data()
 
 # Inventory optimization function for item-level
 @st.cache_data
-def calculate_reorder_point_item(forecast, lead_time_days=2, safety_stock=50):
-    # Convert lead_time_days to weeks' worth of data (assuming 7 days per week)
-    lead_time_weeks = lead_time_days // 7 if lead_time_days >= 7 else 1
-    lead_time_demand = forecast['predicted_sales'][:lead_time_weeks].sum()
-    reorder_point = lead_time_demand + safety_stock
+def calculate_reorder_point_item(forecast, lead_time_days, safety_stock):
+    average_daily_sales = forecast['average_daily_sales'].iloc[0]
+    reorder_point = (lead_time_days * average_daily_sales) + safety_stock
     return reorder_point
 
 # Initialize session state
